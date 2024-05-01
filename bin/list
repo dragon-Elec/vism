@@ -1,0 +1,13 @@
+#!/bin/env python3
+
+import os, yaml  # type: ignore
+
+with open(os.path.expanduser("~/.software/config.yml"), "r") as f:
+    software = yaml.safe_load(f)
+
+print("\n\033[32;1mAvailable software:\033[0m")
+
+for item in software:
+    print(f"  \033[33;1m• \033[0;1m{item['name']}\033[0m")
+
+print()

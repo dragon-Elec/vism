@@ -1,0 +1,98 @@
+#!/bin/env python3
+
+import os, sys, yaml, shutil  # type: ignore
+
+if len(sys.argv) != 1:
+    print("Usage: vism setup")
+    sys.exit(1)
+
+if os.getuid() != 0:
+    print("You need to be root to run this command")
+    sys.exit(1)
+
+with open(os.path.expanduser("~/.software/config.yml"), "r") as f:
+    software = yaml.safe_load(f)
+
+directory = os.path.expanduser("~/.software/" + input("Directory: "))
+if directory == os.path.expanduser("~/.software/bin"):
+    print("Directory is not writeable")
+    sys.exit(1)
+if os.path.exists(directory):
+    print("Directory already exists")
+    sys.exit(1)
+
+name = input("Name: ")
+
+for item in software:
+    if item["name"] == sys.argv[1]:
+        print(f"Application already installed: {item['name']}")
+        sys.exit(1)
+
+author = input("Author: ")
+engine = input("Engine or language: ")
+file = input("File to execute: ")
+file = os.path.expanduser(os.path.expandvars(directory + "/" + file))
+pwd = input("Working directory for application (optional): ")
+icon = input("Icon file (optional): ")
+if "/" in icon:
+    icon = os.path.expanduser(os.path.expandvars(directory + "/" + icon))
+
+terminal = input("Terminal (y/n): ")
+print("""
+Categories:
+      - AudioVideo
+      - Audio
+      - Video
+      - Development
+      - Education
+      - Game
+      - Graphics
+      - Network
+      - Office
+      - Science
+      - Settings
+      - System
+      - Utility
+""".strip())
+category = input("Category (optional, default: Utility): ")
+
+if not category:
+    category = "Utility"
+
+if terminal == "y":
+    terminal = "true"
+else:
+    terminal = "false"
+
+if not pwd:
+    pwd = directory
+
+if not icon:
+    icon = "cs-general"
+else:
+    icon = os.path.expanduser(os.path.expandvars(icon))
+
+software.append({
+    "name": name,
+    "author": author,
+    "engine": engine,
+    "file": file,
+    "dir": directory,
+    "pwd": pwd
+})
+
+with open(os.path.expanduser("~/.software/config.yml"), "w") as f:
+    yaml.safe_dump(software, f)
+
+os.system(f"cp -rf {os.getcwd()} {directory}")
+os.chdir(directory)
+
+with open("/usr/share/applications/" + name + ".desktop", "w") as f:
+    f.write(f"[Desktop Entry]\n")
+    f.write(f"Name={name}\n")
+    f.write(f"Exec={file}\n")
+    f.write(f"Icon={icon}\n") 
+    f.write(f"Type=Application\n")
+    f.write(f"Categories={category}\n")
+    f.write(f"Terminal={terminal}\n")
+    f.write(f"StartupNotify=false\n")

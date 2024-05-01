@@ -1,0 +1,30 @@
+#!/bin/env python3
+
+import os
+import sys
+import subprocess
+
+if len(sys.argv) < 2:
+    print("Usage: vism <command> [args]")
+    sys.exit(1)
+
+command = sys.argv[1]
+if command == "list":
+    if len(sys.argv) != 2:
+        print("Usage: vism list")
+        sys.exit(1)
+    subprocess.run(["/home/vi/.software/bin/list"])
+elif command == "setup":
+    if len(sys.argv) != 2:
+        print("Usage: vism setup")
+        sys.exit(1)
+    subprocess.run(["/home/vi/.software/bin/setup"], cwd=os.getcwd())
+elif command == "remove":
+    if len(sys.argv) != 3:
+        print("Usage: vism remove <name>")
+        sys.exit(1)
+    subprocess.run(["/home/vi/.software/bin/remove", sys.argv[2]], cwd=os.getcwd())
+else:
+    print("Usage: vism <command> [args]")
+    print(f"Unknown command: \"{command}\"")
+    sys.exit(1)
