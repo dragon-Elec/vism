@@ -2,8 +2,12 @@
 
 import os, yaml  # type: ignore
 
-with open(os.path.expanduser("~/.software/config.yml"), "r") as f:
-    software = yaml.safe_load(f)
+try:
+    with open(os.path.expanduser("~/.software/config.yml"), "r") as f:
+        software = yaml.safe_load(f)
+except FileNotFoundError:
+    print("Configuration file not found. Have you installed any software yet?")
+    exit(1)
 
 print("\n\033[32;1mAvailable software:\033[0m")
 

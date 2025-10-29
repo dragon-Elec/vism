@@ -13,7 +13,7 @@ if os.getuid() != 0:
 with open(os.path.expanduser("~/.software/config.yml"), "r") as f:
     software = yaml.safe_load(f)
 
-directory = os.path.expanduser("~/.software/" + input("Directory: "))
+directory = os.path.expanduser("~/.software/" + input("App folder name: "))
 if directory == os.path.expanduser("~/.software/bin"):
     print("Directory is not writeable")
     sys.exit(1)
@@ -24,7 +24,7 @@ if os.path.exists(directory):
 name = input("Name: ")
 
 for item in software:
-    if item["name"] == sys.argv[1]:
+    if item["name"] == name:
         print(f"Application already installed: {item['name']}")
         sys.exit(1)
 
@@ -85,7 +85,6 @@ with open(os.path.expanduser("~/.software/config.yml"), "w") as f:
     yaml.safe_dump(software, f)
 
 os.system(f"cp -rf {os.getcwd()} {directory}")
-os.chdir(directory)
 
 with open("/usr/share/applications/" + name + ".desktop", "w") as f:
     f.write(f"[Desktop Entry]\n")
