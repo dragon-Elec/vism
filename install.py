@@ -11,8 +11,13 @@ if os.getuid():
     sys.exit(1)
 
 shutil.copytree(os.getcwd(), os.path.expanduser("~/.software"), dirs_exist_ok=True)
+# Ensure vism package is copied (it's in the current directory)
+# The above copytree copies everything, so vism/ should be included.
+
 
 for file in os.listdir(os.path.expanduser("~/.software/bin")):
+    if file == "yaml.py":
+        continue
     os.system(
         f"ln -s {os.path.expanduser('~/.software/bin/' + file)} /usr/local/bin/{file}"
     )

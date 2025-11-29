@@ -1,30 +1,65 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 
-import os
 import sys
-import subprocess
+import os
+import argparse
 
-if len(sys.argv) < 2:
-    print("Usage: vism <command> [args]")
+# Add parent directory to path to import vism package
+# This works if bin/vism is in bin/ and vism/ is in ../vism/ relative to bin/
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+
+try:
+    from vism.commands import CommandManager
+except ImportError as e:
+    print(f"Error importing vism: {e}")
+    print("Make sure the 'vism' package is installed correctly.")
     sys.exit(1)
 
-command = sys.argv[1]
-if command == "list":
-    if len(sys.argv) != 2:
-        print("Usage: vism list")
+def main():
+    parser = argparse.ArgumentParser(description="Vi Software Manager")
+    subparsers = parser.add_subparsers(dest="command", help="Command to run")
+
+    # Install command
+    install_parser = subparsers.add_parser("install", help="Install a package")
+    install_parser.add_argument("repo", help="GitHub repository (user/repo) or URL")
+    install_parser.add_argument("alias", nargs="?", help="Alias for the app (optional)")
+    install_parser.add_argument("--tag", help="Specific tag to install")
+    install_parser.add_argument("--upgrade-only", action="store_true", help="Only upgrade if newer")
+    install_parser.add_argument("--file", help="Specific file to extract")
+    install_parser.add_argument("--download-only", action="store_true", help="Download only, no extraction")
+    install_parser.add_argument("--all", action="store_true", help="Extract all files")
+    install_parser.add_argument("--asset", action="append", help="Filter assets")
+
+    # Uninstall command
+    remove_parser = subparsers.add_parser("uninstall", help="Uninstall a package")
+    remove_parser.add_argument("name", help="Name of the app to uninstall")
+
+    # List command
+    subparsers.add_parser("list", help="List installed packages")
+
+    args = parser.parse_args()
+
+    if not args.command:
+        parser.print_help()
         sys.exit(1)
-    subprocess.run([os.path.expanduser("~/.software/bin/list")])
-elif command == "setup":
-    if len(sys.argv) != 2:
-        print("Usage: vism setup")
-        sys.exit(1)
-    subprocess.run([os.path.expanduser("~/.software/bin/setup")], cwd=os.getcwd())
-elif command == "remove":
-    if len(sys.argv) != 3:
-        print("Usage: vism remove <name>")
-        sys.exit(1)
-    subprocess.run([os.path.expanduser("~/.software/bin/remove"), sys.argv[2]], cwd=os.getcwd())
-else:
-    print("Usage: vism <command> [args]")
-    print(f"Unknown command: \"{command}\"")
-    sys.exit(1)
+
+    manager = CommandManager()
+
+    if args.command == "install":
+        manager.install(
+            repo_url=args.repo,
+            alias=args.alias,
+            tag=args.tag,
+            upgrade_only=args.upgrade_only,
+            file_only=args.file,
+            download_only=args.download_only,
+            all_files=args.all,
+            asset_filters=args.asset
+        )
+    elif args.command == "uninstall":
+        manager.remove(args.name)
+    elif args.command == "list":
+        manager.list()
+
+if __name__ == "__main__":
+    main()
